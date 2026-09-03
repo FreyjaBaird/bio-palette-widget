@@ -259,7 +259,7 @@ function render(id) {
   if (!current) return;
   const bestMatch = db.find(x => x.id === current.match) || db;
 
-  const wikiBase = "https://wikimedia.org";
+  const wikiBase = "https://wikimedia.org/";
 
   // Primary City Image Debugger
   const pImg = document.getElementById('p-wiki-img');
