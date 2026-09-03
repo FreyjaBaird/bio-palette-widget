@@ -252,58 +252,48 @@ db.forEach(c => {
   sel.appendChild(opt);
 });
 
-
-
 function render(id) {
   const current = db.find(x => x.id === id);
   if (!current) return;
   const bestMatch = db.find(x => x.id === current.match) || db;
 
-  const wikiBase = "";
-
-  // Primary City Image Debugger
+  // Primary City Image
   const pImg = document.getElementById('p-wiki-img');
   const pLoad = document.getElementById('p-wiki-load');
-  if (current.imgFile) {
-    const pUrl = wikiBase + current.imgFile;
+  if (current.img) {
     pImg.style.display = 'block';
     pLoad.style.display = 'none';
-    
     pImg.onerror = function() {
       pImg.style.display = 'none';
       pLoad.style.display = 'block';
-      pLoad.style.fontSize = '0.6rem';
-      pLoad.innerText = `Failed: ${pUrl}`;
+      pLoad.innerText = `Failed: ${current.img}`;
     };
-    pImg.src = pUrl;
+    pImg.src = current.img; // Uses the full link directly
   } else {
     pImg.style.display = 'none';
     pLoad.style.display = 'block';
     pLoad.innerText = 'No image provided';
   }
 
-  // Matched City Image Debugger
+  // Matched City Image
   const mImg = document.getElementById('m-wiki-img');
   const mLoad = document.getElementById('m-wiki-load');
-  if (bestMatch.imgFile) {
-    const mUrl = wikiBase + bestMatch.imgFile;
+  if (bestMatch.img) {
     mImg.style.display = 'block';
     mLoad.style.display = 'none';
-    
     mImg.onerror = function() {
       mImg.style.display = 'none';
       mLoad.style.display = 'block';
-      mLoad.style.fontSize = '0.6rem';
-      mLoad.innerText = `Failed: ${mUrl}`;
+      mLoad.innerText = `Failed: ${bestMatch.img}`;
     };
-    mImg.src = mUrl;
+    mImg.src = bestMatch.img; // Uses the full link directly
   } else {
     mImg.style.display = 'none';
     mLoad.style.display = 'block';
     mLoad.innerText = 'No image provided';
   }
 
-  // (Your existing palette drawing code below...)
+  // Palette rendering...
   document.getElementById('p-flora').innerHTML = current.f.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   document.getElementById('p-soil').innerHTML = current.s.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   
