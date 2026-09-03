@@ -265,7 +265,13 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
   }
 
   try {
-    let res = await fetch(`https://wikipedia.org{encodeURIComponent(wikiSlug)}`);
+    // Added a custom headers object to satisfy Wikipedia's API policy
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(wikiSlug)}`, {
+      headers: {
+        'Api-User-Agent': 'BioPaletteWidget/1.0 (Educational Project)'
+      }
+    });
+    
     let json = await res.json();
     if (json.thumbnail && json.thumbnail.source) {
       img.src = json.thumbnail.source;
