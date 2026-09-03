@@ -258,7 +258,11 @@ function render(id) {
   const bestMatch = db.find(x => x.id === current.match) || db;
 
   // The URL stitcher helper
-  const getImg = (file) => file ? `https://wikimedia.org{file}` : "";
+    // Old-school string concatenation (Zero backticks, zero template literal bugs)
+  function getImg(file) {
+    if (!file) return "";
+    return "https://upload.wikimedia.org/wikipedia/commons/" + file;
+  }
 
   // Primary City Image
   const pImg = document.getElementById('p-wiki-img');
