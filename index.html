@@ -259,36 +259,51 @@ function render(id) {
   if (!current) return;
   const bestMatch = db.find(x => x.id === current.match) || db;
 
-  // Define the base URL prefix
   const wikiBase = "https://wikimedia.org";
 
-  // Primary City Image
+  // Primary City Image Debugger
   const pImg = document.getElementById('p-wiki-img');
   const pLoad = document.getElementById('p-wiki-load');
   if (current.imgFile) {
-    pImg.src = wikiBase + current.imgFile;
+    const pUrl = wikiBase + current.imgFile;
     pImg.style.display = 'block';
     pLoad.style.display = 'none';
+    
+    pImg.onerror = function() {
+      pImg.style.display = 'none';
+      pLoad.style.display = 'block';
+      pLoad.style.fontSize = '0.6rem';
+      pLoad.innerText = `Failed: ${pUrl}`;
+    };
+    pImg.src = pUrl;
   } else {
     pImg.style.display = 'none';
-    pLoad.innerText = 'No image provided';
     pLoad.style.display = 'block';
+    pLoad.innerText = 'No image provided';
   }
 
-  // Matched Partner City Image
+  // Matched City Image Debugger
   const mImg = document.getElementById('m-wiki-img');
   const mLoad = document.getElementById('m-wiki-load');
   if (bestMatch.imgFile) {
-    mImg.src = wikiBase + bestMatch.imgFile;
+    const mUrl = wikiBase + bestMatch.imgFile;
     mImg.style.display = 'block';
     mLoad.style.display = 'none';
+    
+    mImg.onerror = function() {
+      mImg.style.display = 'none';
+      mLoad.style.display = 'block';
+      mLoad.style.fontSize = '0.6rem';
+      mLoad.innerText = `Failed: ${mUrl}`;
+    };
+    mImg.src = mUrl;
   } else {
     mImg.style.display = 'none';
-    mLoad.innerText = 'No image provided';
     mLoad.style.display = 'block';
+    mLoad.innerText = 'No image provided';
   }
 
-  // Draw Palettes
+  // (Your existing palette drawing code below...)
   document.getElementById('p-flora').innerHTML = current.f.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   document.getElementById('p-soil').innerHTML = current.s.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   
