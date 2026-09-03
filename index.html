@@ -252,52 +252,64 @@ db.forEach(c => {
   sel.appendChild(opt);
 });
 
-async function render(id) {
+function render(id) {
   const current = db.find(x => x.id === id);
   if (!current) return;
   const bestMatch = db.find(x => x.id === current.match) || db;
 
-  // Extracts clean Wikipedia search slug from city name (e.g., "Lincoln, UK" -> "Lincoln")
-  function getWikiSlug(nameStr) {
-    if (!nameStr) return "";
-    return nameStr.split(',')[0].trim(); // Gets the first part ("Aberdeen") and trims it
+  // The unbreakable array-joined URL stitcher
+  function getImg(file) {
+    if (!file) return "";
+    const filename = file.split('/').pop();
+    const parts = ["https://commons", ".wikimedia", ".org/wiki/", "Special:FilePath/", filename];
+    return parts.join("");
   }
 
-  // Function to fetch live image from Wikipedia API
-  async function fetchWikiImg(nameStr, imgElement, loadElement) {
-    const slug = getWikiSlug(nameStr);
-    if (!slug) {
-      imgElement.style.display = 'none';
-      loadElement.innerText = 'No city name provided';
-      loadElement.style.display = 'block';
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://wikipedia.org{encodeURIComponent(slug)}`);
-      const data = await response.json();
-      
-      if (data.originalimage && data.originalimage.source) {
-        imgElement.src = data.originalimage.source;
-        imgElement.style.display = 'block';
-        loadElement.style.display = 'none';
-      } else if (data.thumbnail && data.thumbnail.source) {
-        imgElement.src = data.thumbnail.source;
-        imgElement.style.display = 'block';
-        loadElement.style.display = 'none';
-      } else {
-        throw new Error('No image in summary');
-      }
-    } catch (err) {
-      imgElement.style.display = 'none';
-      loadElement.innerText = `Failed: ${slug}`;
-      loadElement.style.display = 'block';
-    }
+  // Primary City Image
+  const pImg = document.getElementById('p-wiki-img');
+  const pLoad = document.getElementById('p-wiki-load');
+  if (current.file) {
+    const pUrl = getImg(current.file);
+    pImg.style.display = 'block';
+    pLoad.style.display = 'none';
+    
+    pImg.onerror = function() {
+      pImg.style.display = 'none';
+      pLoad.style.display = 'block';
+      pLoad.style.fontSize = '0.55rem';
+      pLoad.style.wordBreak = 'break-all';
+      pLoad.style.padding = '8px';
+      pLoad.innerText = `Failed: ${pUrl}`;
+    };
+    pImg.src = pUrl;
+  } else {
+    pImg.style.display = 'none';
+    pLoad.style.display = 'block';
+    pLoad.innerText = 'No image file provided';
   }
 
-  // Trigger live fetches using the city names
-  fetchWikiImg(current.n, document.getElementById('p-wiki-img'), document.getElementById('p-wiki-load'));
-  fetchWikiImg(bestMatch.n, document.getElementById('m-wiki-img'), document.getElementById('m-wiki-load'));
+  // Matched City Image
+  const mImg = document.getElementById('m-wiki-img');
+  const mLoad = document.getElementById('m-wiki-load');
+  if (bestMatch.file) {
+    const mUrl = getImg(bestMatch.file);
+    mImg.style.display = 'block';
+    mLoad.style.display = 'none';
+    
+    mImg.onerror = function() {
+      mImg.style.display = 'none';
+      mLoad.style.display = 'block';
+      mLoad.style.fontSize = '0.55rem';
+      mLoad.style.wordBreak = 'break-all';
+      mLoad.style.padding = '8px';
+      mLoad.innerText = `Failed: ${mUrl}`;
+    };
+    mImg.src = mUrl;
+  } else {
+    mImg.style.display = 'none';
+    mLoad.style.display = 'block';
+    mLoad.innerText = 'No image file provided';
+  }
 
   // Palette rendering...
   document.getElementById('p-flora').innerHTML = current.f.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
