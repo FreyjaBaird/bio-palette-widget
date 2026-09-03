@@ -264,7 +264,7 @@ function render(id) {
     if (!file) return "";
     // Strips out any old hash prefix if it was included, keeping just the filename
     const filename = file.split('/').pop();
-    return "https://commons.wikimedia.org/wiki/" + filename;
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/" + filename;
   }
 
   // Primary City Image
