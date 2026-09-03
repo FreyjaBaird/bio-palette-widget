@@ -266,7 +266,8 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
 
   try {
     // Added a custom headers object to satisfy Wikipedia's API policy
-    let res = await fetch(`https://en.wikipedia.org/wiki/{encodeURIComponent(wikiSlug)}`, {
+    // Make sure you are using backticks (`) and ${...} with en.wikipedia.org
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(wikiSlug)}`, {
       headers: {
         'Api-User-Agent': 'BioPaletteWidget/1.0 (Educational Project)'
       }
