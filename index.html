@@ -268,7 +268,7 @@ function render(id) {
       pLoad.style.display = 'block';
       pLoad.innerText = `Failed: ${current.imgFile}`;
     };
-    pImg.src = current.img; // Uses the full link directly
+    pImg.src = current.imgFile; // Uses the full link directly
   } else {
     pImg.style.display = 'none';
     pLoad.style.display = 'block';
@@ -286,7 +286,7 @@ function render(id) {
       mLoad.style.display = 'block';
       mLoad.innerText = `Failed: ${bestMatch.imgFile}`;
     };
-    mImg.src = bestMatch.img; // Uses the full link directly
+    mImg.src = bestMatch.imgFile; // Uses the full link directly
   } else {
     mImg.style.display = 'none';
     mLoad.style.display = 'block';
