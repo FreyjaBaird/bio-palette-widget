@@ -260,13 +260,13 @@ function render(id) {
   // Primary City Image
   const pImg = document.getElementById('p-wiki-img');
   const pLoad = document.getElementById('p-wiki-load');
-  if (current.img) {
+  if (current.imgFile) {
     pImg.style.display = 'block';
     pLoad.style.display = 'none';
     pImg.onerror = function() {
       pImg.style.display = 'none';
       pLoad.style.display = 'block';
-      pLoad.innerText = `Failed: ${current.img}`;
+      pLoad.innerText = `Failed: ${current.imgFile}`;
     };
     pImg.src = current.img; // Uses the full link directly
   } else {
@@ -278,13 +278,13 @@ function render(id) {
   // Matched City Image
   const mImg = document.getElementById('m-wiki-img');
   const mLoad = document.getElementById('m-wiki-load');
-  if (bestMatch.img) {
+  if (bestMatch.imgFile) {
     mImg.style.display = 'block';
     mLoad.style.display = 'none';
     mImg.onerror = function() {
       mImg.style.display = 'none';
       mLoad.style.display = 'block';
-      mLoad.innerText = `Failed: ${bestMatch.img}`;
+      mLoad.innerText = `Failed: ${bestMatch.imgFile}`;
     };
     mImg.src = bestMatch.img; // Uses the full link directly
   } else {
