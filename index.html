@@ -259,6 +259,9 @@ function render(id) {
   if (!current) return;
   const bestMatch = db.find(x => x.id === current.match) || db;
 
+  // Define the base URL prefix
+  const wikiBase = "https://wikimedia.org";
+
   // Primary City Image
   const pImg = document.getElementById('p-wiki-img');
   const pLoad = document.getElementById('p-wiki-load');
