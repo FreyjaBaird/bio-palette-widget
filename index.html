@@ -70,6 +70,29 @@
   }
   .bar { flex: 1; }
   .match-title { color: var(--accent); font-weight: 600; margin-bottom: 16px; font-size: 0.95rem; }
+  .wiki-box {
+    width: 100%;
+    height: 120px;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .wiki-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+  .wiki-box span {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
 </style>
 </head>
 <body>
@@ -86,6 +109,10 @@
     
     <div class="label">Soil Profile</div>
     <div id="p-soil" class="strip"></div>
+    <div class="wiki-box">
+      <img id="p-wiki-img" alt="Selected city view">
+      <span id="p-wiki-load">Loading image...</span>
+    </div>
   </div>
 
   <!-- Closest Match Panel -->
@@ -99,114 +126,119 @@
     
     <div class="label">Matched Soil</div>
     <div id="m-soil" class="strip"></div>
+    <div class="wiki-box">
+      <img id="m-wiki-img" alt="Matched city view">
+      <span id="m-wiki-load">Awaiting match...</span>
+    </div>
   </div>
 </div>
 
 <script>
 // Every city now pre-specifies its best match ID, making errors impossible!
 const db = [
-  {id:"abe", n:"Aberdeen, UK", f:["#113822","#255c3c","#538a68"], s:["#3d3b38","#292826"], match:"changsha"},
-  {id:"bat", n:"Bath, UK", f:["#2d5a27","#70422c","#e0dcd0"], s:["#c2b280","#a0825b"], match:"fos"},
-  {id:"bel", n:"Belfast, UK", f:["#1d4e36","#2d6a4f","#52b788"], s:["#4d3d33","#332821"], match:"suz"},
-  {id:"bir", n:"Birmingham, UK", f:["#386641","#6a994e","#a7c957"], s:["#5c3d2e","#422a1f"], match:"she"},
-  {id:"bri-uk", n:"Brighton, UK", f:["#31572c","#4f772d","#90a955"], s:["#e0dcd0","#bcb7a8"], match:"uru"},
-  {id:"bri", n:"Bristol, UK", f:["#2d5a27","#8cb369","#f4a261"], s:["#70422c","#4d2d1d"], match:"tian"},
-  {id:"cam", n:"Cambridge, UK", f:["#2e5a36","#557a46","#b5c99a"], s:["#3b3633","#24211f"], match:"qin"},
-  {id:"can", n:"Canterbury, UK", f:["#1b4332","#4a7c59","#e6c229"], s:["#4a3b32","#3a2d26"], match:"don"},
-  {id:"card", n:"Cardiff, UK", f:["#1b4d3e","#2c6b56","#68bb97"], s:["#5e483d","#3d3028"], match:"han"},
-  {id:"che-uk", n:"Chelmsford, UK", f:["#294d36","#557a46","#ffb703"], s:["#5c4a3b","#3b3026"], match:"wux"},
-  {id:"col", n:"Colchester, UK", f:["#1e4620","#3b6e48","#d4af37"], s:["#4a3f35","#302922"], match:"nb"},
-  {id:"cov", n:"Coventry, UK", f:["#386641","#6a994e","#1e3d59"], s:["#5c3d2e","#422a1f"], match:"wenz"},
-  {id:"der", n:"Derby, UK", f:["#1f4026","#4f772d","#8b5a2b"], s:["#8b5a2b","#63401e"], match:"gy"},
-  {id:"don-uk", n:"Doncaster, UK", f:["#183a1d","#355e3b","#bc6c25"], s:["#423228","#2a201a"], match:"zhuh"},
-  {id:"dun", n:"Dundee, UK", f:["#193d2c","#32664d","#7aa08d"], s:["#473830","#2e241f"], match:"changchun"},
-  {id:"dur", n:"Durham, UK", f:["#163319","#2d6a4f","#7b2cbf"], s:["#3d312a","#2b221d"], match:"shaox"},
-  {id:"edi", n:"Edinburgh, UK", f:["#2d6a4f","#7b2cbf","#90e0ef"], s:["#3d312a","#2b221d"], match:"gua"},
-  {id:"ely", n:"Ely, UK", f:["#2e5a36","#447353","#d8f3dc"], s:["#3b3633","#24211f"], match:"yang"},
-  {id:"exe", n:"Exeter, UK", f:["#214a34","#3e7857","#84b59b"], s:["#7a3b2e","#54281f"], match:"fuz"},
-  {id:"gla", n:"Glasgow, UK", f:["#40916c","#52b788","#d8f3dc"], s:["#423730","#2c2420"], match:"sha"},
-  {id:"glo", n:"Gloucester, UK", f:["#2d5a27","#3e7857","#f4a261"], s:["#70422c","#4d2d1d"], match:"nant"},
-  {id:"her", n:"Hereford, UK", f:["#386641","#a7c957","#d90429"], s:["#5c3d2e","#422a1f"], match:"sha-cn"},
-  {id:"inv", n:"Inverness, UK", f:["#123624","#235c3f","#589174"], s:["#3b3633","#24211f"], match:"xia-cn"},
-  {id:"kin", n:"Kingston, UK", f:["#1b4332","#d90429","#90e0ef"], s:["#4a3b32","#3a2d26"], match:"taiz"},
-  {id:"lan-uk", n:"Lancaster, UK", f:["#2b593f","#40916c","#f5f0bb"], s:["#54433a","#382c26"], match:"jinhua"},
-  {id:"lee", n:"Leeds, UK", f:["#1e4620","#4f772d","#90a955"], s:["#4a3728","#33251b"], match:"wuh"},
-  {id:"lin", n:"Lincoln, UK", f:["#1e4620","#90a955","#e9c46a"], s:["#4a3728","#33251b"], match:"huai"},
-  {id:"liv", n:"Liverpool, UK", f:["#134611","#3e8914","#3da35d"], s:["#6b4c35","#473223"], match:"cq"},
-  {id:"lon", n:"London, UK", f:["#1b4332","#d90429","#ffb703"], s:["#4a3b32","#3a2d26"], match:"bei"},
-  {id:"man", n:"Manchester, UK", f:["#2b593f","#1e3d59","#f5f0bb"], s:["#54433a","#382c26"], match:"che"},
-  {id:"new", n:"Newcastle, UK", f:["#163319","#355e3b","#8fbc8f"], s:["#4a3b32","#312620"], match:"nan"},
-  {id:"nor", n:"Norwich, UK", f:["#294d36","#447353","#82b392"], s:["#4a3e35","#302821"], match:"har"},
-  {id:"not", n:"Nottingham, UK", f:["#1f4026","#3b6e48","#87a96b"], s:["#8b5a2b","#63401e"], match:"jin"},
-  {id:"oxf", n:"Oxford, UK", f:["#244832","#4a7c59","#c7e8c3"], s:["#4a3f35","#302922"], match:"dal"},
-  {id:"ply", n:"Plymouth, UK", f:["#183b28","#2e6146","#64997e"], s:["#523d30","#36281e"], match:"kun"},
-  {id:"por", n:"Portsmouth, UK", f:["#134611","#3da35d","#00b4d8"], s:["#6b4c35","#473223"], match:"yan"},
-  {id:"pre", n:"Preston, UK", f:["#183a1d","#52b788","#f1c40f"], s:["#423228","#2a201a"], match:"weih"},
-  {id:"rip", n:"Ripon, UK", f:["#1c402e","#78a38e","#d4a373"], s:["#5c4a3b","#3b3026"], match:"zhous"},
-  {id:"sal", n:"Salford, UK", f:["#2b593f","#1e3d59","#e76f51"], s:["#54433a","#382c26"], match:"zhenjiang"},
-  {id:"sal-uk", n:"Salisbury, UK", f:["#31572c","#90a955","#e0dcd0"], s:["#e0dcd0","#bcb7a8"], match:"jiax"},
-  {id:"sheff", n:"Sheffield, UK", f:["#183a1d","#3b523b","#728a7c"], s:["#423228","#2a201a"], match:"xia"},
-  {id:"sou", n:"Southampton, UK", f:["#20402e","#3a6b52","#70a387"], s:["#5c4a3d","#3d3128"], match:"zheng"},
-  {id:"sti", n:"Stirling, UK", f:["#2d6a4f","#90e0ef","#7b2cbf"], s:["#3d312a","#2b221d"], match:"huz"},
-  {id:"stk", n:"Stoke, UK", f:["#1f4026","#87a96b","#a0522d"], s:["#8b5a2b","#63401e"], match:"shaog"},
-  {id:"sun", n:"Sunderland, UK", f:["#163319","#8fbc8f","#457b9d"], s:["#4a3b32","#312620"], match:"zhanj"},
-  {id:"swa", n:"Swansea, UK", f:["#1a4231","#336b52","#75a892"], s:["#524036","#362a24"], match:"hefei"},
-  {id:"tru", n:"Truro, UK", f:["#183b28","#64997e","#386641"], s:["#523d30","#36281e"], match:"huizhou"},
-  {id:"wak", n:"Wakefield, UK", f:["#1e4620","#4f772d","#d97d24"], s:["#4a3728","#33251b"], match:"chaozhou"},
-  {id:"win", n:"Winchester, UK", f:["#244832","#c7e8c3","#f4a261"], s:["#4a3f35","#302922"], match:"jiey"},
-  {id:"yor", n:"York, UK", f:["#1c402e","#376951","#78a38e"], s:["#5c4a3b","#3b3026"], match:"shenyang"},
+  {id:"abe", n:"Aberdeen, UK", f:["#113822","#255c3c","#538a68"], s:["#3d3b38","#292826"], match:"changsha", wiki:"Aberdeen"},
+  {id:"bat", n:"Bath, UK", f:["#2d5a27","#70422c","#e0dcd0"], s:["#c2b280","#a0825b"], match:"fos", wiki:"Bath,_Somerset"},
+  {id:"bel", n:"Belfast, UK", f:["#1d4e36","#2d6a4f","#52b788"], s:["#4d3d33","#332821"], match:"suz", wiki:"Belfast"},
+  {id:"bir", n:"Birmingham, UK", f:["#386641","#6a994e","#a7c957"], s:["#5c3d2e","#422a1f"], match:"she", wiki:"Birmingham"},
+  {id:"bri-uk", n:"Brighton, UK", f:["#31572c","#4f772d","#90a955"], s:["#e0dcd0","#bcb7a8"], match:"uru", wiki:"Brighton_and_Hove"},
+  {id:"bri", n:"Bristol, UK", f:["#2d5a27","#8cb369","#f4a261"], s:["#70422c","#4d2d1d"], match:"tian", wiki:"Bristol"},
+  {id:"cam", n:"Cambridge, UK", f:["#2e5a36","#557a46","#b5c99a"], s:["#3b3633","#24211f"], match:"qin", wiki:"Cambridge"},
+  {id:"can", n:"Canterbury, UK", f:["#1b4332","#4a7c59","#e6c229"], s:["#4a3b32","#3a2d26"], match:"don", wiki:"Canterbury"},
+  {id:"card", n:"Cardiff, UK", f:["#1b4d3e","#2c6b56","#68bb97"], s:["#5e483d","#3d3028"], match:"han", wiki:"Cardiff"},
+  {id:"che-uk", n:"Chelmsford, UK", f:["#294d36","#557a46","#ffb703"], s:["#5c4a3b","#3b3026"], match:"wux", wiki:"Chelmsford"},
+  {id:"col", n:"Colchester, UK", f:["#1e4620","#3b6e48","#d4af37"], s:["#4a3f35","#302922"], match:"nb", wiki:"Colchester"},
+  {id:"cov", n:"Coventry, UK", f:["#386641","#6a994e","#1e3d59"], s:["#5c3d2e","#422a1f"], match:"wenz", wiki:"Coventry"},
+  {id:"der", n:"Derby, UK", f:["#1f4026","#4f772d","#8b5a2b"], s:["#8b5a2b","#63401e"], match:"gy", wiki:"Derby"},
+  {id:"don-uk", n:"Doncaster, UK", f:["#183a1d","#355e3b","#bc6c25"], s:["#423228","#2a201a"], match:"zhuh", wiki:"Doncaster"},
+  {id:"dun", n:"Dundee, UK", f:["#193d2c","#32664d","#7aa08d"], s:["#473830","#2e241f"], match:"changchun", wiki:"Dundee"},
+  {id:"dur", n:"Durham, UK", f:["#163319","#2d6a4f","#7b2cbf"], s:["#3d312a","#2b221d"], match:"shaox", wiki:"Durham,_England"},
+  {id:"edi", n:"Edinburgh, UK", f:["#2d6a4f","#7b2cbf","#90e0ef"], s:["#3d312a","#2b221d"], match:"gua", wiki:"Edinburgh"},
+  {id:"ely", n:"Ely, UK", f:["#2e5a36","#447353","#d8f3dc"], s:["#3b3633","#24211f"], match:"yang", wiki:"Ely,_Cambridgeshire"},
+  {id:"exe", n:"Exeter, UK", f:["#214a34","#3e7857","#84b59b"], s:["#7a3b2e","#54281f"], match:"fuz", wiki:"Exeter"},
+  {id:"gla", n:"Glasgow, UK", f:["#40916c","#52b788","#d8f3dc"], s:["#423730","#2c2420"], match:"sha", wiki:"Glasgow"},
+  {id:"glo", n:"Gloucester, UK", f:["#2d5a27","#3e7857","#f4a261"], s:["#70422c","#4d2d1d"], match:"nant", wiki:"Gloucester"},
+  {id:"her", n:"Hereford, UK", f:["#386641","#a7c957","#d90429"], s:["#5c3d2e","#422a1f"], match:"sha-cn", wiki:"Hereford"},
+  {id:"inv", n:"Inverness, UK", f:["#123624","#235c3f","#589174"], s:["#3b3633","#24211f"], match:"xia-cn", wiki:"Inverness"},
+  {id:"kin", n:"Kingston, UK", f:["#1b4332","#d90429","#90e0ef"], s:["#4a3b32","#3a2d26"], match:"taiz", wiki:"Kingston_upon_Thames"},
+  {id:"lan-uk", n:"Lancaster, UK", f:["#2b593f","#40916c","#f5f0bb"], s:["#54433a","#382c26"], match:"jinhua", wiki:"Lancaster,_Lancashire"},
+  {id:"lee", n:"Leeds, UK", f:["#1e4620","#4f772d","#90a955"], s:["#4a3728","#33251b"], match:"wuh", wiki:"Leeds"},
+  {id:"lin", n:"Lincoln, UK", f:["#1e4620","#90a955","#e9c46a"], s:["#4a3728","#33251b"], match:"huai", wiki:"Lincoln,_England"},
+  {id:"liv", n:"Liverpool, UK", f:["#134611","#3e8914","#3da35d"], s:["#6b4c35","#473223"], match:"cq", wiki:"Liverpool"},
+  {id:"lon", n:"London, UK", f:["#1b4332","#d90429","#ffb703"], s:["#4a3b32","#3a2d26"], match:"bei", wiki:"London"},
+  {id:"man", n:"Manchester, UK", f:["#2b593f","#1e3d59","#f5f0bb"], s:["#54433a","#382c26"], match:"che", wiki:"Manchester"},
+  {id:"new", n:"Newcastle, UK", f:["#163319","#355e3b","#8fbc8f"], s:["#4a3b32","#312620"], match:"nan", wiki:"Newcastle_upon_Tyne"},
+  {id:"nor", n:"Norwich, UK", f:["#294d36","#447353","#82b392"], s:["#4a3e35","#302821"], match:"har", wiki:"Norwich"},
+  {id:"not", n:"Nottingham, UK", f:["#1f4026","#3b6e48","#87a96b"], s:["#8b5a2b","#63401e"], match:"jin", wiki:"Nottingham"},
+  {id:"oxf", n:"Oxford, UK", f:["#244832","#4a7c59","#c7e8c3"], s:["#4a3f35","#302922"], match:"dal", wiki:"Oxford"},
+  {id:"ply", n:"Plymouth, UK", f:["#183b28","#2e6146","#64997e"], s:["#523d30","#36281e"], match:"kun", wiki:"Plymouth"},
+  {id:"por", n:"Portsmouth, UK", f:["#134611","#3da35d","#00b4d8"], s:["#6b4c35","#473223"], match:"yan", wiki:"Portsmouth"},
+  {id:"pre", n:"Preston, UK", f:["#183a1d","#52b788","#f1c40f"], s:["#423228","#2a201a"], match:"weih", wiki:"Preston"},
+  {id:"rip", n:"Ripon, UK", f:["#1c402e","#78a38e","#d4a373"], s:["#5c4a3b","#3b3026"], match:"zhous", wiki:"Ripon"},
+  {id:"sal", n:"Salford, UK", f:["#2b593f","#1e3d59","#e76f51"], s:["#54433a","#382c26"], match:"zhenjiang", wiki:"Salford,_Greater_Manchester"},
+  {id:"sal-uk", n:"Salisbury, UK", f:["#31572c","#90a955","#e0dcd0"], s:["#e0dcd0","#bcb7a8"], match:"jiax", wiki:"Salisbury"},
+  {id:"sheff", n:"Sheffield, UK", f:["#183a1d","#3b523b","#728a7c"], s:["#423228","#2a201a"], match:"xia", wiki:"Sheffield"},
+  {id:"sou", n:"Southampton, UK", f:["#20402e","#3a6b52","#70a387"], s:["#5c4a3d","#3d3128"], match:"zheng", wiki:"Southampton"},
+  {id:"sti", n:"Stirling, UK", f:["#2d6a4f","#90e0ef","#7b2cbf"], s:["#3d312a","#2b221d"], match:"huz", wiki:"Stirling"},
+  {id:"stk", n:"Stoke, UK", f:["#1f4026","#87a96b","#a0522d"], s:["#8b5a2b","#63401e"], match:"shaog", wiki:"Stoke-on-Trent"},
+  {id:"sun", n:"Sunderland, UK", f:["#163319","#8fbc8f","#457b9d"], s:["#4a3b32","#312620"], match:"zhanj", wiki:"Sunderland"},
+  {id:"swa", n:"Swansea, UK", f:["#1a4231","#336b52","#75a892"], s:["#524036","#362a24"], match:"hefei", wiki:"Swansea"},
+  {id:"tru", n:"Truro, UK", f:["#183b28","#64997e","#386641"], s:["#523d30","#36281e"], match:"huizhou", wiki:"Truro"},
+  {id:"wak", n:"Wakefield, UK", f:["#1e4620","#4f772d","#d97d24"], s:["#4a3728","#33251b"], match:"chaozhou", wiki:"Wakefield"},
+  {id:"win", n:"Winchester, UK", f:["#244832","#c7e8c3","#f4a261"], s:["#4a3f35","#302922"], match:"jiey", wiki:"Winchester"},
+  {id:"yor", n:"York, UK", f:["#1c402e","#376951","#78a38e"], s:["#5c4a3b","#3b3026"], match:"shenyang", wiki:"York"},
+
 
 // --- 50 CHINA CITIES (Matched with UK counterparts) ---
-  {id:"bei", n:"Beijing, CN", f:["#315c44","#618f77","#ef476f"], s:["#7a634e","#524234"], match:"lon"},
-  {id:"changchun", n:"Changchun, CN", f:["#1b3b2d","#336952","#70a387"], s:["#2b2522","#1a1715"], match:"dun"},
-  {id:"changsha", n:"Changsha, CN", f:["#184732","#2e7d59","#e76f51"], s:["#8a4231","#5c2a1f"], match:"abe"},
-  {id:"chaozhou", n:"Chaozhou, CN", f:["#1e4620","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"wak"},
-  {id:"che", n:"Chengdu, CN", f:["#1b4d3e","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"man"},
-  {id:"cq", n:"Chongqing, CN", f:["#20573e","#419972","#f4a261"], s:["#6e3b2e","#47251d"], match:"liv"},
-  {id:"dal", n:"Dalian, CN", f:["#193d30","#336b56","#68bb97"], s:["#5c4d42","#3b312a"], match:"oxf"},
-  {id:"don", n:"Dongguan, CN", f:["#1b4332","#2a8a5f","#06d6a0"], s:["#754332","#4a2b20"], match:"can"},
-  {id:"fos", n:"Foshan, CN", f:["#2d5a27","#8cb369","#ffd166"], s:["#8c3d26","#5e2919"], match:"bat"},
-  {id:"fuz", n:"Fuzhou, CN", f:["#154a34","#2c825d","#e9c46a"], s:["#823d2b","#54271c"], match:"exe"},
-  {id:"gua", n:"Guangzhou, CN", f:["#134d35","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"edi"},
-  {id:"gy", n:"Guiyang, CN", f:["#1f4026","#3b8a66","#f4a261"], s:["#94412b","#612a1c"], match:"der"},
-  {id:"han", n:"Hangzhou, CN", f:["#1a4d31","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"card"},
-  {id:"har", n:"Harbin, CN", f:["#1d3d30","#366e57","#8cb369"], s:["#2c2724","#1c1917"], match:"nor"},
-  {id:"hefei", n:"Hefei, CN", f:["#1f4a36","#3b8260","#90a955"], s:["#6e5746","#47392e"], match:"swa"},
-  {id:"huai", n:"Huai'an, CN", f:["#1e4620","#4c8563","#c7b198"], s:["#806a54","#544738"], match:"lin"},
-  {id:"huizhou", n:"Huizhou, CN", f:["#183b28","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"tru"},
-  {id:"huz", n:"Huzhou, CN", f:["#2d6a4f","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"sti"},
-  {id:"jiax", n:"Jiaxing, CN", f:["#31572c","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"sal-uk"},
-  {id:"jiey", n:"Jieyang, CN", f:["#244832","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"win"},
-  {id:"jin", n:"Jinan, CN", f:["#234a36","#428562","#90a955"], s:["#7a6856","#52453a"], match:"not"},
-  {id:"jinhua", n:"Jinhua, CN", f:["#2b593f","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"lan-uk"},
-  {id:"kun", n:"Kunming, CN", f:["#1f4d38","#3b8a66","#f4a261"], s:["#94412b","#612a1c"], match:"ply"},
-  {id:"nan", n:"Nanjing, CN", f:["#1e4d36","#388a62","#ffb703"], s:["#7a4a36","#523225"], match:"new"},
-  {id:"nant", n:"Nantong, CN", f:["#2d5a27","#5c8a73","#ffd166"], s:["#5c4c3e","#3d3228"], match:"glo"},
-  {id:"nb", n:"Ningbo, CN", f:["#1e4620","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"col"},
-  {id:"qin", n:"Qingdao, CN", f:["#174235","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"cam"},
-  {id:"sha", n:"Shanghai, CN", f:["#2e5a44","#5c8a73","#ffd166"], s:["#5c4c3e","#3d3228"], match:"gla"},
-  {id:"sha-cn", n:"Shantou, CN", f:["#386641","#2a8a5f","#e76f51"], s:["#8c3d26","#5e2919"], match:"her"},
-  {id:"shaog", n:"Shaoguan, CN", f:["#1f4026","#2e7d59","#e76f51"], s:["#8a4231","#5c2a1f"], match:"stk"},
-  {id:"shaox", n:"Shaoxing, CN", f:["#163319","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"dur"},
-  {id:"shenyang", n:"Shenyang, CN", f:["#234234","#40755d","#a3b899"], s:["#423933","#2b2521"], match:"yor"},
-  {id:"she", n:"Shenzhen, CN", f:["#15593c","#2d9c6d","#06d6a0"], s:["#754332","#4a2b20"], match:"bir"},
-  {id:"suz", n:"Suzhou, CN", f:["#1c4d36","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"bel"},
-  {id:"taiz", n:"Taizhou, CN", f:["#1b4332","#31855a","#90e0ef"], s:["#57473b","#382e26"], match:"kin"},
-  {id:"tian", n:"Tianjin, CN", f:["#294a38","#4e7d63","#a3b899"], s:["#6b5e52","#473e36"], match:"bri"},
-  {id:"uru", n:"Urumqi, CN", f:["#364a3d","#5c7d6b","#d4a373"], s:["#96826d","#635649"], match:"bri-uk"},
-  {id:"weih", n:"Weihai, CN", f:["#183a1d","#336b56","#68bb97"], s:["#5c4d42","#3b312a"], match:"pre"},
-  {id:"wenz", n:"Wenzhou, CN", f:["#386641","#2d9c6d","#f4a261"], s:["#754332","#4a2b20"], match:"cov"},
-  {id:"wuh", n:"Wuhan, CN", f:["#1b4a35","#388260","#f39c12"], s:["#5c4a3b","#3b3026"], match:"lee"},
-  {id:"wux", n:"Wuxi, CN", f:["#294d36","#388a62","#ffd166"], s:["#5c4c3e","#3d3228"], match:"che-uk"},
-  {id:"xia-cn", n:"Xiamen, CN", f:["#174d37","#318a64","#f4a261"], s:["#7d4231","#522b20"], match:"inv"},
-  {id:"xia", n:"Xi'an, CN", f:["#2e4a38","#537d65","#d4a373"], s:["#8a735c","#5c4d3e"], match:"sheff"},
-  {id:"yan", n:"Yantai, CN", f:["#134611","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"por"},
-  {id:"yang", n:"Yangzhou, CN", f:["#2e5a36","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"ely"},
-  {id:"zhanj", n:"Zhanjiang, CN", f:["#163319","#2d9c6d","#06d6a0"], s:["#754332","#4a2b20"], match:"sun"},
-  {id:"zheng", n:"Zhengzhou, CN", f:["#2a4d38","#4c8563","#c7b198"], s:["#806a54","#544738"], match:"sou"},
-  {id:"zhenjiang", n:"Zhenjiang, CN", f:["#2b593f","#388a62","#ffb703"], s:["#7a4a36","#523225"], match:"sal"},
-  {id:"zhous", n:"Zhoushan, CN", f:["#1c402e","#2e735d","#90e0ef"], s:["#6b4c35","#473223"], match:"rip"},
-  {id:"zhuh", n:"Zhuhai, CN", f:["#183a1d","#2d9c6d","#00b4d8"], s:["#754332","#4a2b20"], match:"don-uk"}
+  {id:"bei", n:"Beijing, CN", f:["#315c44","#618f77","#ef476f"], s:["#7a634e","#524234"], match:"lon", wiki:"Beijing"},
+  {id:"changchun", n:"Changchun, CN", f:["#1b3b2d","#336952","#70a387"], s:["#2b2522","#1a1715"], match:"dun", wiki:"Changchun"},
+  {id:"changsha", n:"Changsha, CN", f:["#184732","#2e7d59","#e76f51"], s:["#8a4231","#5c2a1f"], match:"abe", wiki:"Changsha"},
+  {id:"chaozhou", n:"Chaozhou, CN", f:["#1e4620","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"wak", wiki:"Chaozhou"},
+  {id:"che", n:"Chengdu, CN", f:["#1b4d3e","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"man", wiki:"Chengdu"},
+  {id:"cq", n:"Chongqing, CN", f:["#20573e","#419972","#f4a261"], s:["#6e3b2e","#47251d"], match:"liv", wiki:"Chongqing"},
+  {id:"dal", n:"Dalian, CN", f:["#193d30","#336b56","#68bb97"], s:["#5c4d42","#3b312a"], match:"oxf", wiki:"Dalian"},
+  {id:"don", n:"Dongguan, CN", f:["#1b4332","#2a8a5f","#06d6a0"], s:["#754332","#4a2b20"], match:"can", wiki:"Dongguan"},
+  {id:"fos", n:"Foshan, CN", f:["#2d5a27","#8cb369","#ffd166"], s:["#8c3d26","#5e2919"], match:"bat", wiki:"Foshan"},
+  {id:"fuz", n:"Fuzhou, CN", f:["#154a34","#2c825d","#e9c46a"], s:["#823d2b","#54271c"], match:"exe", wiki:"Fuzhou"},
+  {id:"gua", n:"Guangzhou, CN", f:["#134d35","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"edi", wiki:"Guangzhou"},
+  {id:"gy", n:"Guiyang, CN", f:["#1f4026","#3b8a66","#f4a261"], s:["#94412b","#612a1c"], match:"der", wiki:"Guiyang"},
+  {id:"han", n:"Hangzhou, CN", f:["#1a4d31","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"card", wiki:"Hangzhou"},
+  {id:"har", n:"Harbin, CN", f:["#1d3d30","#366e57","#8cb369"], s:["#2c2724","#1c1917"], match:"nor", wiki:"Harbin"},
+  {id:"hefei", n:"Hefei, CN", f:["#1f4a36","#3b8260","#90a955"], s:["#6e5746","#47392e"], match:"swa", wiki:"Hefei"},
+  {id:"huai", n:"Huai'an, CN", f:["#1e4620","#4c8563","#c7b198"], s:["#806a54","#544738"], match:"lin", wiki:"Huai'an"},
+  {id:"huizhou", n:"Huizhou, CN", f:["#183b28","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"tru", wiki:"Huizhou"},
+  {id:"huz", n:"Huzhou, CN", f:["#2d6a4f","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"sti", wiki:"Huzhou"},
+  {id:"jiax", n:"Jiaxing, CN", f:["#31572c","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"sal-uk", wiki:"Jiaxing"},
+  {id:"jiey", n:"Jieyang, CN", f:["#244832","#2a8a5f","#ffd166"], s:["#8c3d26","#5e2919"], match:"win", wiki:"Jieyang"},
+  {id:"jin", n:"Jinan, CN", f:["#234a36","#428562","#90a955"], s:["#7a6856","#52453a"], match:"not", wiki:"Jinan"},
+  {id:"jinhua", n:"Jinhua, CN", f:["#2b593f","#3b8c6e","#e9c46a"], s:["#594235","#3b2b22"], match:"lan-uk", wiki:"Jinhua"},
+  {id:"kun", n:"Kunming, CN", f:["#1f4d38","#3b8a66","#f4a261"], s:["#94412b","#612a1c"], match:"ply", wiki:"Kunming"},
+  {id:"nan", n:"Nanjing, CN", f:["#1e4d36","#388a62","#ffb703"], s:["#7a4a36","#523225"], match:"new", wiki:"Nanjing"},
+  {id:"nant", n:"Nantong, CN", f:["#2d5a27","#5c8a73","#ffd166"], s:["#5c4c3e","#3d3228"], match:"glo", wiki:"Nantong"},
+  {id:"nb", n:"Ningbo, CN", f:["#1e4620","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"col", wiki:"Ningbo"},
+  {id:"qin", n:"Qingdao, CN", f:["#174235","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"cam", wiki:"Qingdao"},
+  {id:"sha", n:"Shanghai, CN", f:["#2e5a44","#5c8a73","#ffd166"], s:["#5c4c3e","#3d3228"], match:"gla", wiki:"Shanghai"},
+  {id:"sha-cn", n:"Shantou, CN", f:["#386641","#2a8a5f","#e76f51"], s:["#8c3d26","#5e2919"], match:"her", wiki:"Shantou"},
+  {id:"shaog", n:"Shaoguan, CN", f:["#1f4026","#2e7d59","#e76f51"], s:["#8a4231","#5c2a1f"], match:"stk", wiki:"Shaoguan"},
+  {id:"shaox", n:"Shaoxing, CN", f:["#163319","#31855a","#8cb369"], s:["#57473b","#382e26"], match:"dur", wiki:"Shaoxing"},
+  {id:"shenyang", n:"Shenyang, CN", f:["#234234","#40755d","#a3b899"], s:["#423933","#2b2521"], match:"yor", wiki:"Shenyang"},
+  {id:"she", n:"Shenzhen, CN", f:["#15593c","#2d9c6d","#06d6a0"], s:["#754332","#4a2b20"], match:"bir", wiki:"Shenzhen"},
+  {id:"suz", n:"Suzhou, CN", f:["#1c4d36","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"bel", wiki:"Suzhou"},
+  {id:"taiz", n:"Taizhou, CN", f:["#1b4332","#31855a","#90e0ef"], s:["#57473b","#382e26"], match:"kin", wiki:"Taizhou,_Zhejiang"},
+  {id:"tian", n:"Tianjin, CN", f:["#294a38","#4e7d63","#a3b899"], s:["#6b5e52","#473e36"], match:"bri", wiki:"Tianjin"},
+  {id:"uru", n:"Urumqi, CN", f:["#364a3d","#5c7d6b","#d4a373"], s:["#96826d","#635649"], match:"bri-uk", wiki:"Ürümqi"},
+  {id:"weih", n:"Weihai, CN", f:["#183a1d","#336b56","#68bb97"], s:["#5c4d42","#3b312a"], match:"pre", wiki:"Weihai"},
+  {id:"wenz", n:"Wenzhou, CN", f:["#386641","#2d9c6d","#f4a261"], s:["#754332","#4a2b20"], match:"cov", wiki:"Wenzhou"},
+  {id:"wuh", n:"Wuhan, CN", f:["#1b4a35","#388260","#f39c12"], s:["#5c4a3b","#3b3026"], match:"lee", wiki:"Wuhan"},
+  {id:"wux", n:"Wuxi, CN", f:["#294d36","#388a62","#ffd166"], s:["#5c4c3e","#3d3228"], match:"che-uk", wiki:"Wuxi"},
+  {id:"xia-cn", n:"Xiamen, CN", f:["#174d37","#318a64","#f4a261"], s:["#7d4231","#522b20"], match:"inv", wiki:"Xiamen"},
+  {id:"xia", n:"Xi'an, CN", f:["#2e4a38","#537d65","#d4a373"], s:["#8a735c","#5c4d3e"], match:"sheff", wiki:"Xi'an"},
+  {id:"yan", n:"Yantai, CN", f:["#134611","#2e735d","#52b788"], s:["#6b5a4d","#453a32"], match:"por", wiki:"Yantai"},
+  {id:"yang", n:"Yangzhou, CN", f:["#2e5a36","#368a62","#b5c99a"], s:["#4d4239","#332b25"], match:"ely", wiki:"Yangzhou"},
+  {id:"zhanj", n:"Zhanjiang, CN", f:["#163319","#2d9c6d","#06d6a0"], s:["#754332","#4a2b20"], match:"sun", wiki:"Zhanjiang"},
+  {id:"zheng", n:"Zhengzhou, CN", f:["#2a4d38","#4c8563","#c7b198"], s:["#806a54","#544738"], match:"sou", wiki:"Zhengzhou"},
+  {id:"zhenjiang", n:"Zhenjiang, CN", f:["#2b593f","#388a62","#ffb703"], s:["#7a4a36","#523225"], match:"sal", wiki:"Zhenjiang"},
+  {id:"zhous", n:"Zhoushan, CN", f:["#1c402e","#2e735d","#90e0ef"], s:["#6b4c35","#473223"], match:"rip", wiki:"Zhoushan"},
+  {id:"zhuh", n:"Zhuhai, CN", f:["#183a1d","#2d9c6d","#00b4d8"], s:["#754332","#4a2b20"], match:"don-uk", wiki:"Zhuhai"}
 ];
 
 const sel = document.getElementById('sel');
@@ -219,17 +251,49 @@ db.forEach(c => {
   sel.appendChild(opt);
 });
 
-function render(id) {
+async function fetchWikiImg(wikiSlug, imgId, loadId) {
+  const img = document.getElementById(imgId);
+  const load = document.getElementById(loadId);
+  
+  img.style.display = 'none';
+  load.style.display = 'block';
+  load.innerText = 'Loading image...';
+
+  if (!wikiSlug) {
+    load.innerText = 'No image link';
+    return;
+  }
+
+  try {
+    let res = await fetch(`https://wikipedia.org{encodeURIComponent(wikiSlug)}`);
+    let json = await res.json();
+    if (json.thumbnail && json.thumbnail.source) {
+      img.src = json.thumbnail.source;
+      img.style.display = 'block';
+      load.style.display = 'none';
+    } else {
+      load.innerText = 'No image found';
+    }
+  } catch(e) {
+    load.innerText = 'Failed to load';
+  }
+}
+
+async function render(id) {
   const current = db.find(x => x.id === id);
   if (!current) return;
-  
-  // Draw primary city
+  const bestMatch = db.find(x => x.id === current.match) || db;
+
+  // Trigger both Wikipedia fetches in parallel
+  fetchWikiImg(current.wiki, 'p-wiki-img', 'p-wiki-load');
+  fetchWikiImg(bestMatch.wiki, 'm-wiki-img', 'm-wiki-load');
+
+  // Draw Primary City Palettes
   document.getElementById('p-flora').innerHTML = current.f.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   document.getElementById('p-soil').innerHTML = current.s.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   
-  // Draw matching city
-  const bestMatch = db.find(x => x.id === current.match) || db;
-  document.getElementById('match-name').innerText = `Closest: ${bestMatch.n}`;
+  // Draw Matched City Palettes
+  document.getElementById('match-name').innerText = `Partner Match: ${bestMatch.n}`;
   document.getElementById('m-flora').innerHTML = bestMatch.f.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
   document.getElementById('m-soil').innerHTML = bestMatch.s.map(c => `<div class='bar' style='background:${c}'></div>`).join('');
 }
