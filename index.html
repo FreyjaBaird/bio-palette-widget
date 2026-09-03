@@ -260,7 +260,7 @@ async function render(id) {
   // Extracts clean Wikipedia search slug from city name (e.g., "Lincoln, UK" -> "Lincoln")
   function getWikiSlug(nameStr) {
     if (!nameStr) return "";
-    return nameStr.split(',')[0].trim();
+    return nameStr.split(',')[0].trim(); // Gets the first part ("Aberdeen") and trims it
   }
 
   // Function to fetch live image from Wikipedia API
