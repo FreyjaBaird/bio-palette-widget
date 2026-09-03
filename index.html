@@ -265,7 +265,7 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
   }
 
   // This MUST use backticks (`) at the start and end for ${...} to work
-  const url = `https://wikipedia.org/wiki/${encodeURIComponent(wikiSlug)}`;
+  const url = "https://en.wikipedia.org/wiki/" + encodeURIComponent(wikiSlug);
 
   try {
     let res = await fetch(url, {
