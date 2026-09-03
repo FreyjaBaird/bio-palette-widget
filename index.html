@@ -264,25 +264,32 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
     return;
   }
 
+  // Define the URL explicitly so we can log or display it
+  const url = `https://wikipedia.org{encodeURIComponent(wikiSlug)}`;
+
   try {
-    // Added a custom headers object to satisfy Wikipedia's API policy
-    // Make sure you are using backticks (`) and ${...} with en.wikipedia.org
-    let res = await fetch(`https://wikipedia.org{encodeURIComponent(wikiSlug)}`, {
+    let res = await fetch(url, {
       headers: {
         'Api-User-Agent': 'BioPaletteWidget/1.0 (Educational Project)'
       }
     });
     
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
     let json = await res.json();
     if (json.thumbnail && json.thumbnail.source) {
       img.src = json.thumbnail.source;
       img.style.display = 'block';
       load.style.display = 'none';
     } else {
-      load.innerText = 'No image found';
+      load.innerText = `No image found (${url})`;
     }
   } catch(e) {
-    load.innerText = 'Failed to load';
+    // This will print the exact URL that failed directly in the UI box
+    load.style.fontSize = '0.65rem'; // Shrink text slightly to fit long URLs
+    load.innerText = `Failed: ${url}`;
   }
 }
 
