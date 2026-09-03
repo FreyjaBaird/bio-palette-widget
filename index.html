@@ -259,9 +259,12 @@ function render(id) {
 
   // The URL stitcher helper
     // Old-school string concatenation (Zero backticks, zero template literal bugs)
+  // Magic redirect helper: zero hashes needed, just the filename!
   function getImg(file) {
     if (!file) return "";
-    return "https://upload.wikimedia.org/wikipedia/commons/" + file;
+    // Strips out any old hash prefix if it was included, keeping just the filename
+    const filename = file.split('/').pop();
+    return "https://wikimedia.org/" + filename;
   }
 
   // Primary City Image
