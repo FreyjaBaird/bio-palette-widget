@@ -264,7 +264,7 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
     return;
   }
 
-  // Define the URL explicitly so we can log or display it
+  // This MUST use backticks (`) at the start and end for ${...} to work
   const url = `https://wikipedia.org{encodeURIComponent(wikiSlug)}`;
 
   try {
@@ -284,11 +284,10 @@ async function fetchWikiImg(wikiSlug, imgId, loadId) {
       img.style.display = 'block';
       load.style.display = 'none';
     } else {
-      load.innerText = `No image found (${url})`;
+      load.innerText = 'No image found';
     }
   } catch(e) {
-    // This will print the exact URL that failed directly in the UI box
-    load.style.fontSize = '0.65rem'; // Shrink text slightly to fit long URLs
+    load.style.fontSize = '0.65rem';
     load.innerText = `Failed: ${url}`;
   }
 }
