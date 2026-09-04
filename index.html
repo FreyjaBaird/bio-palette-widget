@@ -340,6 +340,25 @@ sel.onchange = (e) => render(e.target.value);
 
 // Run on start
 render(db.id);
+  // 1. Populate your select options from the database
+  const selectEl = document.getElementById('sel');
+  db.forEach(city => {
+    const opt = document.createElement('option');
+    opt.value = city.id;
+    opt.innerText = city.n;
+    selectEl.appendChild(opt);
+  });
+
+  // 2. Listen for manual changes
+  selectEl.addEventListener('change', (e) => {
+    render(e.target.value);
+  });
+
+  // 3. TRIGGER INITIAL RENDER ON PAGE LOAD (Add this line!)
+  if (db.length > 0) {
+    render(db.id); // Automatically renders Aberdeen (or whichever is first)
+  }
+
 </script>
 </body>
 </html>
