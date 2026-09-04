@@ -69,6 +69,18 @@
     border: 1px solid rgba(255,255,255,0.05);
   }
   .bar { flex: 1; }
+
+  .match-header-box {
+    height: 45px; /* Adjusts to match your select element height + padding */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 20px; /* Matches the select's margin-bottom */
+  }
+  .panel .match-title {
+    margin: 0; /* Remove old spacing inside the title */
+  }
+
   .match-title { color: var(--accent); font-weight: 600; margin-bottom: 16px; font-size: 0.95rem; }
   .wiki-box {
     width: 100%;
@@ -119,7 +131,9 @@
   <div class="panel">
     <h2>Chromatic Harmony</h2>
     <p>Closest visual match</p>
-    <div id="match-name" class="match-title">Select a city...</div>
+    <div class="match-header-box">
+      <div id="match-name" class="match-title">Select a city...</div>
+    </div>
     
     <div class="label">Matched Flora</div>
     <div id="m-flora" class="strip"></div>
@@ -131,6 +145,7 @@
       <span id="m-wiki-load">Awaiting match...</span>
     </div>
   </div>
+
 </div>
 
 <script>
